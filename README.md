@@ -131,3 +131,39 @@ Para concluir, a imagem das duas tabelas utilizadas neste terceiro endpoint.
 ![image](https://github.com/ThalesJ2/Ultralinks-Thales/assets/95149974/2b331d07-d359-44ec-8d13-fad431d138f2)
 
 
+O quarto endpoint consiste em transferências entre usuários. Para realizar uma transferência, o usuário precisa ter uma conta cadastrada com saldo suficiente. Além disso, o destinatário da transferência também deve estar cadastrado.
+
+```
+Metodo POST:
+http://localhost:8000/user/transfer
+Se ambos os usuários estiverem cadastrados e o valor da transferência for compatível
+com o saldo do remetente, a operação será concluída com sucesso e retornará o seguinte resultado:
+{
+    "Account": {
+        "id": 3,
+        "user_cpf": "55874123",
+        "balance": 1100,
+        "created_at": "2023-12-10T21:48:25.000000Z",
+        "updated_at": "2023-12-10T21:48:25.000000Z"
+    },
+    "Deposit": {
+        "value": 500,
+        "operation": "DEP1970",
+        "id_account": 3,
+        "id": 7
+    }
+}
+
+Se o CPF do destinatário da transferência for inválido ou não estiver cadastrado,
+será retornado um erro indicando a impossibilidade de realizar a transferência.
+{
+    "messageError": "Not Found",
+    "statusCode": 404,
+    "timestamp": "2023-12-10 11:38:37pm"
+}
+```
+Imagem do banco completa.
+
+![image](https://github.com/ThalesJ2/Ultralinks-Thales/assets/95149974/8678535f-ed82-4c72-bba0-e8c9c6c1e60d)
+
+
