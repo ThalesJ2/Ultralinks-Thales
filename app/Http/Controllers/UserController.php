@@ -88,20 +88,6 @@ class UserController extends Controller
             $data = $request->all();
             $number = random_int(1000,9999);
             $code_deposit = "DEP".$number;
-            $user = User::where('cpf', $data['cpf'])->get();
-            $dataUser = $this->me()->getContent();
-            $userData = json_decode($dataUser, true);
-            $cpfAuth = $userData['cpf'];
-            $acc = Account::where('user_cpf',$data['cpf'])->first();
-            if($cpfAuth != $data['cpf'])
-            {
-                return response()->json([
-                    'messageError' => "Forbidden",
-                    'statusCode' => 403,
-                    'timestamp' => date("Y-m-d h:i:sa")
-                ], 400);
-            }
-
 
             if(!CustomValidation::validateBalance($data['value']))
             {
@@ -109,6 +95,22 @@ class UserController extends Controller
                     'messageError' => "Bad Request",
                     'statusCode' => 400,
                     'message'=> "invalid field",
+                    'timestamp' => date("Y-m-d h:i:sa")
+                ], 400);
+            }
+
+
+            $user = User::where('cpf', $data['cpf'])->get();
+            $dataUser = $this->me()->getContent();
+            $userData = json_decode($dataUser, true);
+            $cpfAuth = $userData['cpf'];
+            $acc = Account::where('user_cpf',$data['cpf'])->first();
+
+            if($cpfAuth != $data['cpf'])
+            {
+                return response()->json([
+                    'messageError' => "Forbidden",
+                    'statusCode' => 403,
                     'timestamp' => date("Y-m-d h:i:sa")
                 ], 400);
             }
@@ -161,4 +163,60 @@ class UserController extends Controller
 
     }
 
+    public function transfer(Request $request){
+
+        try{
+            $data = $request->all();
+            $number = random_int(1000,9999);
+            $code_transf = "TRANSF".$number;
+
+            if(!CustomValidation::validateBalance($data['value']))
+            {
+                return response()->json([
+                    'messageError' => "Bad Request",
+                    'statusCode' => 400,
+                    'message'=> "invalid field",
+                    'timestamp' => date("Y-m-d h:i:sa")
+                ], 400);
+            }
+                $dataUser = $this->me()->getContent();
+                $userData = json_decode($dataUser, true);
+                $cpfAuth = $userData['cpf'];
+                $user = Account::where('user_cpf', $data['cpf'])->where('balance','>=',$data['value'])->first();
+                $user_send = Account::where('user_cpf',$data['cpf_send'])->get();
+
+            if($cpfAuth != $data['cpf'])
+            {
+                return response()->json([
+                    'messageError' => "Forbidden",
+                    'statusCode' => 403,
+                    'timestamp' => date("Y-m-d h:i:sa")
+                ], 400);
+            }
+
+            if($user==null || !$user_send->isNotEmpty())
+            {
+                return response()->json([
+                    'messageError' => "Not Found",
+                    'statusCode' => 404,
+                    'timestamp' => date("Y-m-d h:i:sa")
+                ], 404);
+            }
+            $user->balance-=$data['value'];
+            Account::where('user_cpf', $data['cpf'])
+                ->decrement('balance', $data['value']);
+            Account::where('user_cpf', $data['cpf_send'])
+                ->increment('balance', $data['value']);
+
+            $historics = Historic::create([
+                'value' => $data['value'],
+                'operation' =>$code_transf,
+                'id_account' =>$user->id,
+            ]);
+            return response()->json(["Account"=>$user,"Transf"=>$historics],200);
+
+        }catch (Throwable $th){
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
 }
