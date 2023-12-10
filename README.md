@@ -62,3 +62,28 @@ informação adequada do erro, por exemplo:
 Para concluir, apresento abaixo a imagem das duas tabelas utilizadas neste primeiro endpoint.
 ![image](https://github.com/ThalesJ2/Ultralinks-Thales/assets/95149974/00428d2f-2539-40de-9d91-5a5f6130df60)
 
+O segundo endpoint implementado é destinado à autenticação de usuários, exigindo os campos obrigatórios de email e senha para a validação. No processo de autenticação, utilizei a tecnologia JWT para a geração de tokens.
+
+```
+Metodo POST:
+http://localhost:8000/user
+{
+    "email":"pedro@gmail.com",
+    "password":"23132"
+}
+
+Os dados serão verificados no banco de dados, e se estiverem corretos, retorna um token.
+{
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXV0aCIsI
+mlhdCI6MTcwMjI0MzQzNSwiZXhwIjoxNzAyMjQ3MDM1LCJuYmYiOjE3MDIyNDM0MzUsImp0aSI6IjdISWtUT0JleTBTeEdhaUsiLCJzdWIiOiIzIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.ZuTaKi2eHU1WV_HFWWhep6X5ptMfaCkHi1MwuEy9EiE",
+    "token_type": "bearer",
+    "expires_in": 3600
+}
+Se o usuário não estiver cadastrado ou se houver algum campo inválido,retornará a seguinte resposta:
+{
+    "messageError": "Not Found",
+    "statusCode": 404,
+    "timestamp": "2023-12-10 09:27:23pm"
+}
+```
+
