@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
-
-
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Helpers\CustomValidation;
 use App\Helpers\GeneralHelpers;
 use App\Http\Resources\UserResource;
+use App\Models\Account;
 use App\Models\Adress;
+use App\Models\Historic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -80,5 +79,72 @@ class UserController extends Controller
         return Auth::guard('web');
     }
 
+    public function deposit(Request $request)
+    {
+        try{
+            $data = $request->all();
+            $number = random_int(1000,9999);
+            $code_deposit = "DEP".$number;
+            $user = User::where('cpf', $data['cpf'])->get();
+            //$acc = Account::with('historics')->where('user_cpf', $data['cpf'])->first();
+            $acc = Account::where('user_cpf',$data['cpf'])->first();
+
+            if(!CustomValidation::validateBalance($data['value']))
+            {
+                return response()->json([
+                    'messageError' => "Bad Request",
+                    'statusCode' => 400,
+                    'message'=> "invalid field",
+                    'timestamp' => date("Y-m-d h:i:sa")
+                ], 400);
+            }
+
+            if($acc){
+                $result = Account::where('user_cpf', $data['cpf'])
+                ->increment('balance', $data['value']);
+
+                $acc->balance+=$data['value'];
+                $historics = Historic::create([
+                    'value' => $data['value'],
+                    'operation' => $code_deposit,
+                    'id_account' =>$acc->id,
+                ]);
+
+                if ($result == 0) {
+                    return response()->json([
+                        'messageError' => "Bad Request",
+                        'statusCode' => 400,
+                        'timestamp' => date("Y-m-d h:i:sa")
+                    ], 400);
+                }
+                return response()->json(["Account"=>$acc,"Deposit"=>$historics],200);
+            }
+
+            if ($user->isNotEmpty()) {
+                $account = Account::create([
+                    'user_cpf' => $data['cpf'],
+                    'balance' => $data['value'],
+                ]);
+
+                $historics = Historic::create([
+                    'value' => $data['value'],
+                    'operation' => $code_deposit,
+                    'id_account' => $account->id,
+                ]);
+
+                return response()->json(["Account"=>$account,"Deposit"=>$historics],200);
+            }
+
+            return response()->json([
+                'messageError' => "Not Found",
+                'statusCode' => 404,
+                'timestamp' => date("Y-m-d h:i:sa")
+            ], 404);
+
+        }catch (Throwable $th){
+            return response()->json(['error' => "Internal error"], 500);
+        }
+
+    }
 
 }

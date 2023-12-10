@@ -24,4 +24,10 @@ class CustomValidation
         return preg_match($emailAux, $email['email']) === 1;
     }
 
+    public static function validateBalance($balance){
+
+        if(is_double($balance) && $balance >=1)
+            return true;
+    }
+
 }

@@ -33,4 +33,23 @@ class GeneralHelpers{
         }
 
     }
+
+    public static function formatObj($account,$deposit){
+        $formattedAccount = [
+            'id' => $account->id,
+            'user_cpf' => $account->user_cpf,
+            'balance' => $account->balance,
+            'created_at' => $account->created_at,
+            'updated_at' => $account->updated_at,
+        ];
+
+        $formattedDeposit = [
+            'value' => $deposit->value,
+            'operation' => $deposit->operation,
+            'id_account' => $deposit->id_account,
+            'id' => $deposit->id,
+        ];
+        $formattedAccount['deposit'] = $formattedDeposit;
+        return $formattedAccount;
+    }
 }

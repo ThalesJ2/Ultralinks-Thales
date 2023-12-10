@@ -7,10 +7,12 @@ use App\Http\Middleware\UserProtected;
 
 
 Route::post("/user",[UserController::class,"create"]);
-Route::post('/auth', [UserController::class,"login"]);
+Route::post("auth", [UserController::class,"login"]);
+
 
 
 Route::group(['middleware'=>[UserProtected::class]],function(){
+    Route::post("/user/deposit",[UserController::class,"deposit"]);
     Route::get("/user",[UserController::class,"index"]);
 });
 

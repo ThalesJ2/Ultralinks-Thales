@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string("cpf")->unique();
             $table->date("date_birth");
             $table->string("password");
-            $table->rememberToken();
             $table->timestamps();
         });
         Schema::create('address',function(Blueprint $table){
