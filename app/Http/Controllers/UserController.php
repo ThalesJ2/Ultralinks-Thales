@@ -59,7 +59,6 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-
         if ($token = Auth::attempt($credentials)) {
             return $this->respondWithToken($token);
         }
@@ -74,6 +73,10 @@ class UserController extends Controller
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ]);
     }
+    public function me()
+    {
+        return response()->json(auth()->user());
+    }
     public function guard()
     {
         return Auth::guard('web');
@@ -86,8 +89,19 @@ class UserController extends Controller
             $number = random_int(1000,9999);
             $code_deposit = "DEP".$number;
             $user = User::where('cpf', $data['cpf'])->get();
-            //$acc = Account::with('historics')->where('user_cpf', $data['cpf'])->first();
+            $dataUser = $this->me()->getContent();
+            $userData = json_decode($dataUser, true);
+            $cpfAuth = $userData['cpf'];
             $acc = Account::where('user_cpf',$data['cpf'])->first();
+            if($cpfAuth != $data['cpf'])
+            {
+                return response()->json([
+                    'messageError' => "Forbidden",
+                    'statusCode' => 403,
+                    'timestamp' => date("Y-m-d h:i:sa")
+                ], 400);
+            }
+
 
             if(!CustomValidation::validateBalance($data['value']))
             {
